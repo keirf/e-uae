@@ -104,6 +104,7 @@ static GtkAdjustment *cachesize_adj;
 static GtkWidget *joy_widget[2][7];
 
 static unsigned int prevledstate;
+static unsigned int prevtracknr[4];
 
 static GtkWidget *hdlist_widget;
 static int selected_hd_row;
@@ -161,7 +162,8 @@ enum gui_commands {
     GUICMD_MSGBOX,       // Display a message box for me, please
     GUICMD_FLOPPYDLG,    // Open a floppy insert dialog
     GUICMD_SAVEDLG,      /* Open a save image dialog */
-    GUICMD_RESTOREDLG    /* Open a restore image dialog */
+    GUICMD_RESTOREDLG,   /* Open a restore image dialog */
+    GUICMD_UPDATELEDS    /* Update LEDs and other gui_info */
 };
 
 enum uae_commands {
@@ -566,8 +568,8 @@ static void saverestore_dialog(int cmd)
     gtk_widget_show(*psel);
 }
 
-#define MY_IDLE_PERIOD        250
-#define LEDS_CALLBACK_PERIOD  1000
+static void leds_callback (void);
+
 /*
  * my_idle()
  *
@@ -634,39 +636,64 @@ static int my_idle (void)
         case GUICMD_RESTOREDLG:
             saverestore_dialog(cmd);
             break;
+        case GUICMD_UPDATELEDS:
+            leds_callback();
+            break;
 	}
     }
     return 1;
 }
 
-static int leds_callback (void)
+static void leds_callback (void)
 {
     unsigned int leds = gui_ledstate;
     unsigned int i;
 
-    if (!quit_gui) {
-	for (i = 0; i < 5; i++) {
-	    GtkWidget *widget = i ? floppy_widget[i-1] : power_led;
-	    unsigned int mask = 1 << i;
-	    unsigned int on = leds & mask;
+    if (quit_gui)
+        return;
 
-	    if (!widget)
-		continue;
+    for (i = 0; i < 5; i++) {
+        GtkWidget *widget = i ? floppy_widget[i-1] : power_led;
+        unsigned int mask = 1 << i;
+        unsigned int on = leds & mask;
+            
+        if (!widget)
+            continue;
 
-	   if (on == (prevledstate & mask))
-		continue;
+        if (on == (prevledstate & mask))
+            continue;
 
-	    if (i > 0)
-		floppyfileentry_set_led (FLOPPYFILEENTRY (widget), on);
-	    else {
-		static GdkColor red   = {0, 0xffff, 0x0000, 0x0000};
-		static GdkColor black = {0, 0x0000, 0x0000, 0x0000};
-		led_set_color (LED (widget), on ? red : black);
-	    }
-	}
-	prevledstate = leds;
+        if (i > 0)
+            floppyfileentry_set_led (FLOPPYFILEENTRY (widget), on);
+        else {
+            static GdkColor red   = {0, 0xffff, 0x0000, 0x0000};
+            static GdkColor black = {0, 0x0000, 0x0000, 0x0000};
+            led_set_color (LED (widget), on ? red : black);
+        }
     }
-    return 1;
+
+    for ( i = 0; i < 4; i++ )
+    {
+        unsigned int tracknr = gui_data.drive_track[i]*2+gui_data.drive_side;
+        /* Ignore disabled drives and those where track # has not changed. */
+        if ( gui_data.drive_disabled[i] || (tracknr == prevtracknr[i]) )
+            continue;
+        /*
+         * Extra hack: disk side selection (lsb of track nr) is a global line.
+         * Prevent useless updates to inactive drives by checking each drive's
+         * select line if its cylinder # has not changed. If the drive hasn't
+         * stepped, and it is not selected, the dskside change is probably not
+         * relevant to it!
+         */
+        if ( !(gui_data.drive_selected & (1u<<i)) &&
+             ((tracknr ^ prevtracknr[i]) == 1) )
+            continue;
+        floppyfileentry_set_tracknr(
+            FLOPPYFILEENTRY(floppy_widget[i]), tracknr);
+        prevtracknr[i] = tracknr;
+    }
+
+    prevledstate = leds;
 }
 
 static int find_current_toggle (GtkWidget **widgets, int count)
@@ -2013,8 +2040,6 @@ static void create_guidlg (void)
     gtk_notebook_set_page (GTK_NOTEBOOK (notebook), i - 1);
 
     gtk_widget_show (vbox);
-
-    gtk_timeout_add (1000, (GtkFunction)leds_callback, 0);
 }
 
 /*
@@ -2075,12 +2100,13 @@ void gui_fps (int fps, int idle)
  *
  * Called from the main UAE thread to inform the GUI
  * of disk activity so that indicator LEDs may be refreshed.
- *
- * We don't respond to this, since our LEDs are updated
- * periodically by my_idle()
  */
 void gui_led (int num, int on)
 {
+    gui_ledstate &= ~(1 << num);
+    if ( on )
+        gui_ledstate |= 1 << num;
+    write_comm_pipe_int (&to_gui_pipe, GUICMD_UPDATELEDS, 0);
 }
 
 

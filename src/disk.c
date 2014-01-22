@@ -618,6 +618,7 @@ static void update_drive_gui (int num)
     gui_data.crc32[num] = drv->crc32;
     gui_data.drive_motor[num] = drv->state;
     gui_data.drive_track[num] = drv->cyl;
+    gui_data.drive_selected = ~selected;
     gui_data.drive_side = side;
     gui_data.drive_writing[num] = writ;
     gui_ledstate &= ~(2 << num);

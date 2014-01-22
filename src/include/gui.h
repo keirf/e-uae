@@ -28,6 +28,7 @@ struct gui_info
     uae_u8 drive_disabled[4];	    /* drive is disabled */
     uae_u8 powerled;                /* state of power led */
     uae_u8 drive_side;		    /* floppy side */
+    uae_u8 drive_selected;	    /* mask of selected floppies */
     uae_u8 hd;			    /* harddrive */
     uae_u8 cd;			    /* CD */
     int fps, idle;

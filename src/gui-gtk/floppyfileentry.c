@@ -81,6 +81,9 @@ static void floppyfileentry_init (FloppyFileEntry *ffe)
     GTK_WIDGET_UNSET_FLAGS (ffe->path_widget, GTK_CAN_FOCUS);
     gtk_editable_set_editable (GTK_EDITABLE (ffe->path_widget), FALSE);
 
+    ffe->tracknr_widget = gtk_label_new("0");
+    gtk_label_set_width_chars(GTK_LABEL(ffe->tracknr_widget), 3);
+
     bbox = gtk_hbox_new (TRUE, 2);
     ffe->insert_button = gtk_button_new_with_label ("Insert...");
     ffe->eject_button  = gtk_button_new_with_label ("Eject");
@@ -89,6 +92,7 @@ static void floppyfileentry_init (FloppyFileEntry *ffe)
     gtk_box_pack_start (GTK_BOX (bbox), ffe->insert_button, TRUE, TRUE, 2);
 
     hbox = gtk_hbox_new (FALSE, 3);
+    gtk_box_pack_start (GTK_BOX (hbox), ffe->tracknr_widget, FALSE, FALSE, 2);
     gtk_box_pack_start (GTK_BOX (hbox), ledbox, FALSE, FALSE, 2);
     gtk_box_pack_start (GTK_BOX (hbox), ffe->path_widget, TRUE, TRUE, 2);
     gtk_box_pack_start (GTK_BOX (hbox), bbox, FALSE, FALSE, 2);
@@ -287,6 +291,13 @@ void floppyfileentry_set_led (FloppyFileEntry *ffe, gboolean state)
 	color = (GdkColor){0, 0x0000, 0x0000, 0x0000};
 
     led_set_color (LED (ffe->led), color);
+}
+
+void floppyfileentry_set_tracknr (FloppyFileEntry *ffe, unsigned int nr)
+{
+    char txt[6];
+    sprintf(txt, "%u", nr);
+    gtk_label_set_text(GTK_LABEL(ffe->tracknr_widget), txt);
 }
 
 void floppyfileentry_do_dialog (FloppyFileEntry *ffe)

@@ -24,6 +24,7 @@ struct _FloppyFileEntry
     GtkWidget *insert_button;
     GtkWidget *eject_button;
     GtkWidget *path_widget;
+    GtkWidget *tracknr_widget;
 
     gchar     *filename;
     gchar     *drivename;
@@ -49,6 +50,7 @@ G_CONST_RETURN
 #endif
 gchar		       *floppyfileentry_get_filename	(FloppyFileEntry *ffentry);
 void			floppyfileentry_set_led		(FloppyFileEntry *ffentry, gboolean state);
+void			floppyfileentry_set_tracknr	(FloppyFileEntry *ffe, unsigned int nr);
 void			floppyfileentry_do_dialog	(FloppyFileEntry *ffentry);
 
 #ifdef __cplusplus
