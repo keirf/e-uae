@@ -432,8 +432,12 @@ static uae_u32 REGPARAM2 hardfile_close (TrapContext *context)
     if (!hfpd->opencount)
 	return 0;
     hfpd->opencount--;
-    if (hfpd->opencount == 0)
+
+    if (hfpd->opencount == 0) {
 	write_comm_pipe_u32 (&hfpd->requests, 0, 1);
+	uae_sem_wait (&hfpd->sync_sem);
+    }
+
     put_word (m68k_areg (&context->regs, 6) + 32, get_word (m68k_areg (&context->regs, 6) + 32) - 1);
     return 0;
 }
@@ -663,7 +667,7 @@ static uae_u32 hardfile_do_io (struct hardfiledata *hfd, struct hardfileprivdata
 		error = handle_scsi (request, hfd);
 	    } else { /* we don't want users trashing their "partition" hardfiles with hdtoolbox */
 		error = -3; /* IOERR_NOCMD */
-		write_log ("UAEHF: HD_SCSICMD tried on regular HDF, unit %d", unit);
+		write_log ("UAEHF: HD_SCSICMD tried on regular HDF, unit %d\n", unit);
 	    }
 	break;
 
@@ -793,9 +797,18 @@ void hardfile_reset (void)
 		if ((request = hfpd->d_request[i]))
 		    abort_async (hfpd, request, 0, 0);
 	    }
+
+	    write_comm_pipe_u32 (&hfpd->requests, 0, 1);
+	    uae_sem_wait (&hfpd->sync_sem);
 	}
+
 	memset (hfpd, 0, sizeof (struct hardfileprivdata));
     }
+}
+
+void hardfile_cleanup (void)
+{
+    hardfile_reset ();
 }
 
 void hardfile_install (void)
