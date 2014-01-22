@@ -43,6 +43,7 @@
 #include "caps.h"
 #endif
 #endif
+#include "libdisk.h"
 #include "crc32.h"
 
 #include <ctype.h>
@@ -135,7 +136,7 @@ typedef struct {
 #define DRIVE_ID_35HD  0xAAAAAAAA
 #define DRIVE_ID_525SD 0x55555555 /* 40 track 5.25 drive , kickstart does not recognize this */
 
-typedef enum { ADF_NORMAL, ADF_EXT1, ADF_EXT2, ADF_FDI, ADF_IPF, ADF_CATWEASEL, ADF_PCDOS } drive_filetype;
+typedef enum { ADF_NORMAL, ADF_EXT1, ADF_EXT2, ADF_FDI, ADF_IPF, ADF_CATWEASEL, ADF_PCDOS, ADF_LIBDISK } drive_filetype;
 typedef struct {
     struct zfile *diskfile;
     struct zfile *writediskfile;
@@ -552,6 +553,9 @@ static void drive_image_free (drive *drv)
 #ifdef CAPS
 	caps_unloadimage (drv - floppy);
 #endif
+	break;
+	case ADF_LIBDISK:
+            libdisk_close(drv - floppy);
 	break;
 	case ADF_FDI:
 #ifdef FDI2RAW
@@ -979,6 +983,12 @@ static int drive_insert (drive * drv, struct uae_prefs *p, int dnum, const char 
 	    tid->bitlen = 0;
 	    tid->offs = i * 512 * drv->num_secs;
 	}
+
+    } else if (libdisk_open(fname, drv-floppy)) {
+
+	drv->wrprot = 1;
+	drv->num_tracks = 160;
+	drv->filetype = ADF_LIBDISK;
 
     } else {
 	unsigned int i;
@@ -1423,6 +1433,10 @@ static void drive_fill_bigbuf (drive * drv, int force)
 	caps_loadtrack (drv->bigmfmbuf, drv->tracktiming, drv - floppy, tr, &drv->tracklen, &drv->multi_revolution, &drv->skipoffset);
 #endif
 
+    } else if (drv->filetype == ADF_LIBDISK) {
+
+	libdisk_loadtrack (drv->bigmfmbuf, drv->tracktiming, drv - floppy, tr, &drv->tracklen, &drv->multi_revolution, &drv->skipoffset);
+
     } else if (drv->filetype == ADF_FDI) {
 
 #ifdef FDI2RAW
@@ -1780,6 +1794,7 @@ static void drive_write_data (drive * drv)
 	}
 	return;
     case ADF_IPF:
+    case ADF_LIBDISK:
 	break;
     case ADF_PCDOS:
 	ret = drive_write_pcdos (drv);
@@ -2332,6 +2347,9 @@ static void fetchnextrevolution (drive *drv)
 #ifdef CAPS
 	caps_loadrevolution (drv->bigmfmbuf, drv - floppy, drv->cyl * 2 + side, &drv->tracklen);
 #endif
+	break;
+	case ADF_LIBDISK:
+	libdisk_loadrevolution (drv->bigmfmbuf, drv - floppy, drv->tracktiming, &drv->tracklen);
 	break;
 	case ADF_FDI:
 #ifdef FDI2RAW
