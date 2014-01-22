@@ -687,7 +687,10 @@ void REGPARAM2 MakeFromSR (struct regstruct *regs)
 	}
     }
 
+   /* Interrupt priority level may have changed. Assert SPCFLAG_INT
+    * to check if there's an IRQ ready to go at the new level. */
     set_special (regs, SPCFLAG_INT);
+
     if (regs->t1 || regs->t0)
 	set_special (regs, SPCFLAG_TRACE);
     else
@@ -973,15 +976,12 @@ void REGPARAM2 Exception (int nr, struct regstruct *regs, uaecptr oldpc)
 
 STATIC_INLINE void service_interrupt (unsigned int level, struct regstruct *regs)
 {
-    if (level > regs->intmask) {
+    regs->stopped = 0;
+    unset_special (regs, SPCFLAG_STOP);
 
-	regs->stopped = 0;
-	unset_special (regs, SPCFLAG_STOP);
+    Exception (level + 24, regs, 0);
 
-	Exception (level + 24, regs, 0);
-
-	regs->intmask = level;
-    }
+    regs->intmask = level;
 }
 
 /*
@@ -1694,12 +1694,14 @@ STATIC_INLINE int do_specialties (int cycles, struct regstruct *regs)
      * In non-cycle-exact mode we handle this by separating the interrupt request
      * pending (SPCFLAG_INT) and interrupt request arrived (SPCFLAG_DOINT) events.
      * This ensures that there's always a delay of one opcode (and so at least 2
-     * machine cycles) between the interrupt controller requesting an interrupt
-     * and us servicing it here.
+     * machine cycles) between the interrupt controller requesting an interrupt or
+     * the processor changing its interrupt priority level and us servicing it here.
      *
      * In cycle-exact mode, there's just one event (SPCFLAG_INT) and the delay is
      * handled internally by the interrupt controller code in custom.c - intlev()
      * and friends.
+     *
+     * This stuff needs some tidying up!
      */
     if ((regs->spcflags & SPCFLAG_DOINT) ||
 	(currprefs.cpu_cycle_exact && (regs->spcflags & SPCFLAG_INT))) {
@@ -1708,8 +1710,15 @@ STATIC_INLINE int do_specialties (int cycles, struct regstruct *regs)
 
 	unset_special (regs, SPCFLAG_DOINT);
 
-	if (intr != -1)
+	if (intr > (int)regs->intmask) {
+	    if (currprefs.cpu_cycle_exact)
+		unset_special(regs, SPCFLAG_INT);
+
 	    service_interrupt (intr, regs);
+	} else {
+	    if (intr < 0 && currprefs.cpu_cycle_exact)
+		unset_special (regs, SPCFLAG_INT);
+	}
     }
 
     if ((regs->spcflags & SPCFLAG_INT) && !currprefs.cpu_cycle_exact) {

@@ -2550,86 +2550,103 @@ static void DMACON (unsigned int hpos, uae_u16 v)
 
 #ifdef CPUEMU_6
 
-static int irq_pending[15];       /* If true, an IRQ is pending arrival at the CPU. */
-static unsigned long irq_due[15]; /* Cycle time that IRQ will arrive at CPU */
+static int           irq_pending[15];	/* If true, an IRQ is pending arrival at the CPU. If false,
+					 * an IRQ has arrived or is disabled. */
+static unsigned long irq_time[15];	/* Cycle time an IRQ will arrive at the CPU if that IRQ is
+					 * pending or has arrived; otherwise 0, if an IRQ is disabled. */
 
 /*
- * Handle interrupt delay in cycle-exact mode.
+ * Get priority level of IRQ (cycle-exact mode)
  */
-static int intlev_2 (void)
+STATIC_INLINE int intlev_exact (uae_u16 imask)
 {
-    uae_u16 imask = intreq & intena;
-    int il = -1;
+#if 0
+    assert ((imask & 0x7FFF) != 0);
+#endif
 
-    if (imask && (intena & 0x4000)) {
-	unsigned long cycles = get_cycles ();
-	int i;
+    unsigned long curr_time = get_cycles ();
+    int i;
 
-	for (i = 14; i >= 0; i--) {
-	    if (imask & (1 << i)) {
-		if (irq_pending[i] && (cycles >= irq_due[i])) {
-		    irq_pending[i] = 0;
+    for (i = 14; i >= 0; i--) {
+	if (imask & (1 << i)) {
+	    if (irq_pending[i] == 0 || ((curr_time - irq_time[i]) > 4 * CYCLE_UNIT)) {
+		/* Mark IRQ as arrived. */
+		irq_pending[i] = 0;
 
-		    if (i == 13 || i == 14)
-			il = -1;
-		    else if (i == 11 || i == 12)
-			return 5;
-		    else if (i >= 7 && i <= 10)
-			return 4;
-		    else if (i >= 4 && i <= 6)
-			return 3;
-		    else if (i == 3)
-			return 2;
-		    else
-			return 1;
-	        }
+		/* Get priority level of IRQ. */
+		if (i == 13 || i == 14)
+		    return 6;
+		if (i == 11 || i == 12)
+		    return 5;
+		if (i >= 7 && i <= 10)
+		    return 4;
+		if (i >= 4 && i <= 6)
+		    return 3;
+		if (i == 3)
+		    return 2;
+		else
+		    return 1;
 	    }
 	}
-    } else
-	unset_special (&regs, SPCFLAG_INT);
-
-    return il;
+    }
+    /* If we got here, then an at least one IRQ must be pending,
+     * but has not yet arrived at the CPU. */
+    return 0;
 }
 #endif
 
 /*
- * Get interrupt level of IRQ.
+ * Get priority level of IRQ (not cycle-exact mode)
+ */
+STATIC_INLINE int intlev_simple (uae_u16 imask)
+{
+#if 0
+    assert ((imask & 0x7FFF) != 0);
+#endif
+
+    if (imask & 0x6000)
+	return 6;
+    if (imask & 0x1800)
+	return 5;
+    if (imask & 0x0780)
+	return 4;
+    if (imask & 0x0070)
+	return 3;
+    if (imask & 0x0008)
+	return 2;
+    else
+	return 1;
+}
+
+/*
+ * Get level of interrupt request presented to CPU.
+ *
+ * If no IRQs are active and enabled, returns -1.
+ * If none of the active IRQs have yet reached the CPU, returns 0.
+ * Otherwise, returns the priority level of the highest priorty active IRQ.
  */
 int intlev (void)
 {
-    int il = -1;
+    uae_u16 imask = intreq & intena;
 
+    if (imask && (intena & 0x4000)) {
 #ifdef CPUEMU_6
-    if (currprefs.cpu_cycle_exact) {
-	il = intlev_2 ();
-	if (il >= 0 && il <= (int) regs.intmask)
-	    unset_special (&regs, SPCFLAG_INT);
-    } else
+	if (currprefs.cpu_cycle_exact)
+	    return intlev_exact (imask);
+	else
 #endif
-    {
-	uae_u16 imask = intreq & intena;
-	if (imask && (intena & 0x4000)) {
-	    if (imask & 0x6000)
-		il = 6;
-	    if (imask & 0x1800)
-		il = 5;
-	    if (imask & 0x0780)
-		il = 4;
-	    if (imask & 0x0070)
-		il = 3;
-	    if (imask & 0x0008)
-		il = 2;
-	    if (imask & 0x0007)
-		il = 1;
-	}
+	    return intlev_simple (imask);
     }
-
-    return il;
+    return -1;
 }
 
+/*
+ * Enable/disable an IRQ.
+ */
 static void doint (void)
 {
-    set_special (&regs, SPCFLAG_INT);
+    if (intena & 0x4000)
+	set_special (&regs, SPCFLAG_INT);
 
 #ifdef CPUEMU_6
     if (currprefs.cpu_cycle_exact) {
@@ -2639,12 +2656,12 @@ static void doint (void)
 	imask = intreq & intena;
 
 	if (imask && (intena & 0x4000)) {
-	    /* Set up delay for IRQ to arrive at the CPU. */
-	    unsigned long cycle_irq_due = get_cycles () + 4 * CYCLE_UNIT;
+	    /* Set up time for IRQ to arrive at the CPU. */
+	    unsigned long curr_time = get_cycles ();
 	    for (i = 0; i < 15; i++) {
 		if ((imask & (1 << i)) && irq_pending[i] == 0) {
 		    irq_pending[i] = 1;
-		    irq_due[i]     = cycle_irq_due;
+		    irq_time[i]  = curr_time;
 		}
 	    }
 	}
@@ -2677,14 +2694,17 @@ void INTREQ_0 (uae_u16 v)
 	     * pending status. */
 	    int i;
 	    for (i = 0; i < 15; i++) {
-		if (v & (1 << i))
+		if (v & (1 << i)) {
 		    irq_pending[i] = 0;
+		    irq_time[i]    = 0;
+		}
 	    }
 	}
     }
 #endif
 
-    doint ();
+    if (intena & 0x4000)
+	doint ();
 }
 
 void INTREQ (uae_u16 v)
