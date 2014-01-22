@@ -274,31 +274,31 @@ static void blitter_dofast (void)
 {
     int i,j;
     uaecptr bltadatptr = 0, bltbdatptr = 0, bltcdatptr = 0, bltddatptr = 0;
-    uae_u8 mt = bltcon0 & 0xFF;
+    uae_u8 mt = bltcon0 & 0xFF, chen = bltcon0 >> 8;
 
     blit_masktable[0] = blt_info.bltafwm;
     blit_masktable[blt_info.hblitsize - 1] &= blt_info.bltalwm;
 
-    if (bltcon0 & 0x800) {
+    if (chen & 8) {
 	bltadatptr = bltapt;
 	bltapt += (blt_info.hblitsize*2 + blt_info.bltamod)*blt_info.vblitsize;
     }
-    if (bltcon0 & 0x400) {
+    if (chen & 4) {
 	bltbdatptr = bltbpt;
 	bltbpt += (blt_info.hblitsize*2 + blt_info.bltbmod)*blt_info.vblitsize;
     }
-    if (bltcon0 & 0x200) {
+    if (chen & 2) {
 	bltcdatptr = bltcpt;
 	bltcpt += (blt_info.hblitsize*2 + blt_info.bltcmod)*blt_info.vblitsize;
     }
-    if (bltcon0 & 0x100) {
+    if (chen & 1) {
 	bltddatptr = bltdpt;
 	bltdpt += (blt_info.hblitsize*2 + blt_info.bltdmod)*blt_info.vblitsize;
     }
 
 #ifdef SPEEDUP
     if (blitfunc_dofast[mt] && !blitfill) {
-	(*blitfunc_dofast[mt])(bltadatptr, bltbdatptr, bltcdatptr, bltddatptr, &blt_info);
+	(*blitfunc_dofast[mt])(chen, bltadatptr, bltbdatptr, bltcdatptr, bltddatptr, &blt_info);
     } else
 #endif
     {
@@ -313,7 +313,7 @@ static void blitter_dofast (void)
 	    for (i = 0; i < blt_info.hblitsize; i++) {
 		uae_u32 bltadat, blitahold;
 		uae_u16 bltbdat;
-		if (bltadatptr) {
+		if (chen & 8) {
 		    blt_info.bltadat = bltadat = chipmem_wget (bltadatptr);
 		    bltadatptr += 2;
 		} else
@@ -322,14 +322,14 @@ static void blitter_dofast (void)
 		blitahold = (((uae_u32)preva << 16) | bltadat) >> blt_info.blitashift;
 		preva = bltadat;
 
-		if (bltbdatptr) {
+		if (chen & 4) {
 		    blt_info.bltbdat = bltbdat = chipmem_wget (bltbdatptr);
 		    bltbdatptr += 2;
 		    blitbhold = (((uae_u32)prevb << 16) | bltbdat) >> blt_info.blitbshift;
 		    prevb = bltbdat;
 		}
 
-		if (bltcdatptr) {
+		if (chen & 2) {
 		    blt_info.bltcdat = chipmem_wget (bltcdatptr);
 		    bltcdatptr += 2;
 		}
@@ -345,16 +345,16 @@ static void blitter_dofast (void)
 		}
 		if (blt_info.bltddat)
 		    blt_info.blitzero = 0;
-		if (bltddatptr) {
+		if (chen & 1) {
 		    dodst = 1;
 		    dstp = bltddatptr;
 		    bltddatptr += 2;
 		}
 	    }
-	    if (bltadatptr) bltadatptr += blt_info.bltamod;
-	    if (bltbdatptr) bltbdatptr += blt_info.bltbmod;
-	    if (bltcdatptr) bltcdatptr += blt_info.bltcmod;
-	    if (bltddatptr) bltddatptr += blt_info.bltdmod;
+	    if (chen & 8) bltadatptr += blt_info.bltamod;
+	    if (chen & 4) bltbdatptr += blt_info.bltbmod;
+	    if (chen & 2) bltcdatptr += blt_info.bltcmod;
+	    if (chen & 1) bltddatptr += blt_info.bltdmod;
 	}
 	if (dodst) chipmem_wput (dstp, blt_info.bltddat);
 	blt_info.bltbhold = blitbhold;
@@ -369,30 +369,30 @@ static void blitter_dofast_desc (void)
 {
     int i,j;
     uaecptr bltadatptr = 0, bltbdatptr = 0, bltcdatptr = 0, bltddatptr = 0;
-    uae_u8 mt = bltcon0 & 0xFF;
+    uae_u8 mt = bltcon0 & 0xFF, chen = bltcon0 >> 8;
 
     blit_masktable[0] = blt_info.bltafwm;
     blit_masktable[blt_info.hblitsize - 1] &= blt_info.bltalwm;
 
-    if (bltcon0 & 0x800) {
+    if (chen & 8) {
 	bltadatptr = bltapt;
 	bltapt -= (blt_info.hblitsize*2 + blt_info.bltamod)*blt_info.vblitsize;
     }
-    if (bltcon0 & 0x400) {
+    if (chen & 4) {
 	bltbdatptr = bltbpt;
 	bltbpt -= (blt_info.hblitsize*2 + blt_info.bltbmod)*blt_info.vblitsize;
     }
-    if (bltcon0 & 0x200) {
+    if (chen & 2) {
 	bltcdatptr = bltcpt;
 	bltcpt -= (blt_info.hblitsize*2 + blt_info.bltcmod)*blt_info.vblitsize;
     }
-    if (bltcon0 & 0x100) {
+    if (chen & 1) {
 	bltddatptr = bltdpt;
 	bltdpt -= (blt_info.hblitsize*2 + blt_info.bltdmod)*blt_info.vblitsize;
     }
 #ifdef SPEEDUP
     if (blitfunc_dofast_desc[mt] && !blitfill) {
-	(*blitfunc_dofast_desc[mt])(bltadatptr, bltbdatptr, bltcdatptr, bltddatptr, &blt_info);
+	(*blitfunc_dofast_desc[mt])(chen, bltadatptr, bltbdatptr, bltcdatptr, bltddatptr, &blt_info);
     } else
 #endif
     {
@@ -406,7 +406,7 @@ static void blitter_dofast_desc (void)
 	    for (i = 0; i < blt_info.hblitsize; i++) {
 		uae_u32 bltadat, blitahold;
 		uae_u16 bltbdat;
-		if (bltadatptr) {
+		if (chen & 8) {
 		    bltadat = blt_info.bltadat = chipmem_wget (bltadatptr);
 		    bltadatptr -= 2;
 		} else
@@ -415,14 +415,14 @@ static void blitter_dofast_desc (void)
 		blitahold = (((uae_u32)bltadat << 16) | preva) >> blt_info.blitdownashift;
 		preva = bltadat;
 
-		if (bltbdatptr) {
+		if (chen & 4) {
 		    blt_info.bltbdat = bltbdat = chipmem_wget (bltbdatptr);
 		    bltbdatptr -= 2;
 		    blitbhold = (((uae_u32)bltbdat << 16) | prevb) >> blt_info.blitdownbshift;
 		    prevb = bltbdat;
 		}
 
-		if (bltcdatptr) {
+		if (chen & 2) {
 		    blt_info.bltcdat = blt_info.bltbdat = chipmem_wget (bltcdatptr);
 		    bltcdatptr -= 2;
 		}
@@ -438,16 +438,16 @@ static void blitter_dofast_desc (void)
 		}
 		if (blt_info.bltddat)
 		    blt_info.blitzero = 0;
-		if (bltddatptr) {
+		if (chen & 1) {
 		    dstp = bltddatptr;
 		    dodst = 1;
 		    bltddatptr -= 2;
 		}
 	    }
-	    if (bltadatptr) bltadatptr -= blt_info.bltamod;
-	    if (bltbdatptr) bltbdatptr -= blt_info.bltbmod;
-	    if (bltcdatptr) bltcdatptr -= blt_info.bltcmod;
-	    if (bltddatptr) bltddatptr -= blt_info.bltdmod;
+	    if (chen & 8) bltadatptr -= blt_info.bltamod;
+	    if (chen & 4) bltbdatptr -= blt_info.bltbmod;
+	    if (chen & 2) bltcdatptr -= blt_info.bltcmod;
+	    if (chen & 1) bltddatptr -= blt_info.bltdmod;
 	}
 	if (dodst) chipmem_wput (dstp, blt_info.bltddat);
 	blt_info.bltbhold = blitbhold;

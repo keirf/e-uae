@@ -36,7 +36,7 @@ extern void decide_blitter (unsigned int hpos);
 extern void blitter_done_notify (void);
 extern void blitter_slowdown (int, int, unsigned int, unsigned int);
 
-typedef void blitter_func(uaecptr, uaecptr, uaecptr, uaecptr, struct bltinfo *);
+typedef void blitter_func(uae_u8, uaecptr, uaecptr, uaecptr, uaecptr, struct bltinfo *);
 
 #define BLITTER_MAX_WORDS 2048
 
