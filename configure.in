@@ -873,7 +873,7 @@ if [[ "$GFX_DEP" = "gfx-x11" ]]; then
   AC_MSG_CHECKING(whether to compile XKB extension support)
   TMP_SAVE_LIBS=$LIBS
   TMP_SAVE_CFLAGS=$CFLAGS
-  LIBS="$X_LIBS $LIBS -lxkbfile"
+  LIBS="$X_LIBS $LIBS -lX11 -lxkbfile"
   CFLAGS="$CFLAGS $X_CFLAGS"
   AC_TRY_LINK([
     #include "confdefs.h"
