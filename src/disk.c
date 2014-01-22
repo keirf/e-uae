@@ -2794,6 +2794,9 @@ void DSKLEN (uae_u16 v, unsigned int hpos)
     if (dsklength == 1)
 	dsklength = 0;
 
+    if ( (dsksync == 0x8a91) || ((dsksync & 0xff00) == 0x8900) )
+        write_log("CopyLock sync %04x\n", dsksync);
+
 #ifdef DEBUGGER
     if (((disk_debug_mode & DISK_DEBUG_DMA_READ) && dskdmaen == 2) ||
 	((disk_debug_mode & DISK_DEBUG_DMA_WRITE) && dskdmaen == 3))
