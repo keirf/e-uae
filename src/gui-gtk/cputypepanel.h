@@ -38,7 +38,7 @@ struct _CpuTypePanelClass
   void (* cputypepanel) (CpuTypePanel *cputypepanel );
 };
 
-guint		cputypepanel_get_type		(void);
+GtkType		cputypepanel_get_type		(void);
 GtkWidget*	cputypepanel_new		(void);
 void		cputypepanel_set_cpulevel	(CpuTypePanel *ctpanel, guint cpulevel);
 void		cputypepanel_set_addr24bit	(CpuTypePanel *ctpanel, guint addr24bit);

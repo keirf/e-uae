@@ -41,7 +41,7 @@ struct _ChipsetSpeedPanelClass
   void (* chipsetspeedpanel) (ChipsetSpeedPanel *chipsetspeedpanel );
 };
 
-guint		chipsetspeedpanel_get_type	  (void);
+GtkType		chipsetspeedpanel_get_type	  (void);
 GtkWidget*	chipsetspeedpanel_new		  (void);
 
 void chipsetspeedpanel_set_framerate		  (ChipsetSpeedPanel *panel, guint framerate);

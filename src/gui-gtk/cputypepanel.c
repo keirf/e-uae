@@ -24,9 +24,9 @@ static void on_addr24bit_toggled (GtkWidget *w, CpuTypePanel *ctpanel);
 static void on_fpuenabled_toggled (GtkWidget *w, CpuTypePanel *ctpanel);
 static void on_accuracy_changed (GtkWidget *w, CpuTypePanel *ctpanel);
 
-guint cputypepanel_get_type ()
+GtkType cputypepanel_get_type ()
 {
-    static guint cputypepanel_type = 0;
+    static GtkType cputypepanel_type = 0;
 
     if (!cputypepanel_type) {
 	static const GtkTypeInfo cputypepanel_info = {

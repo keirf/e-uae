@@ -35,7 +35,7 @@ struct _ChooserWidgetClass
     void (* chooserwidget) (ChooserWidget *chooserwidget);
 };
 
-guint		chooserwidget_get_type		(void);
+GtkType		chooserwidget_get_type		(void);
 GtkWidget*	chooserwidget_new		(void);
 void		chooserwidget_clear		(ChooserWidget *chooser);
 void		chooserwidget_set_choice	(ChooserWidget *chooser, guint choice_num);

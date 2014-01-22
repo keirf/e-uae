@@ -29,9 +29,9 @@ static void on_chipsettype_changed (GtkWidget *w, ChipsetTypePanel *panel);
 static void on_frequency_changed (GtkWidget *w, ChipsetTypePanel *panel);
 
 
-guint chipsettypepanel_get_type (void)
+GtkType chipsettypepanel_get_type (void)
 {
-    static guint chipsettypepanel_type = 0;
+    static GtkType chipsettypepanel_type = 0;
 
     if (!chipsettypepanel_type) {
 	static const GtkTypeInfo chipsettypepanel_info = {

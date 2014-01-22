@@ -30,9 +30,9 @@ static void on_framerate_changed (GtkWidget *w, ChipsetSpeedPanel *panel);
 static void on_sprite_collisions_changed (GtkWidget *w, ChipsetSpeedPanel *panel);
 static void on_immediate_blits_changed (GtkWidget *w, ChipsetSpeedPanel *panel);
 
-guint chipsetspeedpanel_get_type (void)
+GtkType chipsetspeedpanel_get_type (void)
 {
-    static guint chipsetspeedpanel_type = 0;
+    static GtkType chipsetspeedpanel_type = 0;
 
     if (!chipsetspeedpanel_type) {
 	static const GtkTypeInfo chipsetspeedpanel_info = {

@@ -20,9 +20,9 @@ static void chooserwidget_class_init (ChooserWidgetClass *class);
 static guint chooser_get_choice_num (ChooserWidget *chooser);
 static void on_choice_changed (GtkWidget *w, ChooserWidget *chooser);
 
-guint chooserwidget_get_type ()
+GtkType chooserwidget_get_type ()
 {
-    static guint chooserwidget_type = 0;
+    static GtkType chooserwidget_type = 0;
 
     if (!chooserwidget_type) {
 	static const GtkTypeInfo chooserwidget_info = {

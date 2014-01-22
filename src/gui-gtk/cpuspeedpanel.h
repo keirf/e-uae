@@ -45,7 +45,7 @@ struct _CpuSpeedPanelClass
     void (* cpuspeedpanel) (CpuSpeedPanel *cpuspeedpanel );
 };
 
-guint		cpuspeedpanel_get_type		(void);
+GtkType		cpuspeedpanel_get_type		(void);
 GtkWidget*	cpuspeedpanel_new		(void);
 void		cpuspeedpanel_set_cpuspeed	(CpuSpeedPanel *cspanel, gint cpuspeed);
 void		cpuspeedpanel_set_cpulevel	(CpuSpeedPanel *cspanel, guint cpulevel);

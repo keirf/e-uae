@@ -22,9 +22,9 @@ static void floppyfileentry_class_init (FloppyFileEntryClass *class);
 static void on_eject (GtkWidget *w, FloppyFileEntry *ffe);
 static void on_insert (GtkWidget *w, FloppyFileEntry *ffe);
 
-guint floppyfileentry_get_type ()
+GtkType floppyfileentry_get_type ()
 {
-    static guint floppyfileentry_type = 0;
+    static GtkType floppyfileentry_type = 0;
 
     if (!floppyfileentry_type) {
 	static const GtkTypeInfo floppyfileentry_info = {

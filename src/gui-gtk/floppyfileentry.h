@@ -38,7 +38,7 @@ struct _FloppyFileEntryClass
   void (* floppyfileentry) (FloppyFileEntry *floppyfileentry);
 };
 
-guint			floppyfileentry_get_type	(void);
+GtkType			floppyfileentry_get_type	(void);
 GtkWidget*		floppyfileentry_new		(void);
 void			floppyfileentry_set_currentdir	(FloppyFileEntry *ffentry, const gchar *filename);
 void			floppyfileentry_set_filename	(FloppyFileEntry *ffentry, const gchar *filename);

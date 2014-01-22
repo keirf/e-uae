@@ -29,9 +29,9 @@ static void led_size_request (GtkWidget *widget, GtkRequisition *requisition);
 static void led_size_allocate (GtkWidget *widget, GtkAllocation *allocation);
 
 
-guint led_get_type ()
+GtkType led_get_type ()
 {
-    static guint led_type = 0;
+    static GtkType led_type = 0;
 
     if (!led_type) {
 	static const GtkTypeInfo led_info = {

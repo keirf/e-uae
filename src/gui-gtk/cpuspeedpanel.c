@@ -24,9 +24,9 @@ static void on_adjust_changed   (GtkWidget *w, CpuSpeedPanel *cspanel);
 static void on_idleenabled_toggled (GtkWidget *w, CpuSpeedPanel *cspanel);
 static void on_idlerate_changed (GtkWidget *w, CpuSpeedPanel *cspanel);
 
-guint cpuspeedpanel_get_type ()
+GtkType cpuspeedpanel_get_type ()
 {
-    static guint cpuspeedpanel_type = 0;
+    static GtkType cpuspeedpanel_type = 0;
 
     if (!cpuspeedpanel_type) {
 	static const GtkTypeInfo cpuspeedpanel_info = {

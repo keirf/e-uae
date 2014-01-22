@@ -34,7 +34,7 @@ struct _ChipsetTypePanelClass
   void (* chipsettypepanel) (ChipsetTypePanel *chipsettypepanel );
 };
 
-guint		chipsettypepanel_get_type	  (void);
+GtkType		chipsettypepanel_get_type	  (void);
 GtkWidget*	chipsettypepanel_new		  (void);
 void            chipsettypepanel_set_chipset_mask (ChipsetTypePanel *panel, guint chipset_mask);
 void            chipsettypepanel_set_ntscmode     (ChipsetTypePanel *panel, guint ntscmode);   

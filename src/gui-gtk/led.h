@@ -38,7 +38,7 @@ struct _LedClass
   GtkWidgetClass parent_class;
 };
 
-guint			led_get_type	(void);
+GtkType			led_get_type	(void);
 GtkWidget*		led_new		(void);
 void			led_set_off	(Led *theled);
 void			led_set_color	(Led *theled, GdkColor col);
