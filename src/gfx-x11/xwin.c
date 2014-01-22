@@ -38,6 +38,9 @@
 #include "keymap/keymap.h"
 #include "keymap/keymap_all.h"
 
+#define XAutoRepeatOn(x) ((void)0)
+#define XAutoRepeatOff(x) ((void)0)
+
 #ifdef __cplusplus
 #define VI_CLASS c_class
 #else
