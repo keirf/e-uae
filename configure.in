@@ -762,16 +762,6 @@ if [[ "x$WANT_JIT" != "xno" -a "$HOST_CPU" = "i386" ]]; then
     fi
   fi
   AC_MSG_RESULT(yes)
-
-  AC_MSG_CHECKING([whether assembler supports --execstack option])
-  SAVE_CFLAGS="$CFLAGS"
-  CFLAGS="-Wa,--execstack $CFLAGS"
-  AC_TRY_COMPILE(, int main (void) {return 0;},
-    [AC_MSG_RESULT(yes)
-    UAE_CFLAGS="-Wa,--execstack $UAE_CFLAGS"],
-    AC_MSG_RESULT(no)
-  )
-  CFLAGS="$SAVE_CFLAGS"
 else
   AC_MSG_RESULT(no)
 fi
