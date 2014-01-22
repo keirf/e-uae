@@ -54,7 +54,7 @@ struct {
 
 #include <dlfcn.h>
 
-#define CAPSLIB_NAME    "libcapsimage.so.2"
+#define CAPSLIB_NAME    "libcapsimage.so.4"
 
 /*
  * The Unix/dlopen method for loading and linking the CAPSLib plug-in
