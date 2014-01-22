@@ -1914,6 +1914,9 @@ void vsync_handle_redraw (int long_frame, int lof_changed)
 	    savestate_state = STATE_RESTORE;
 	    reset_drawing ();
 	    uae_reset (0);
+	} else if (savestate_state == STATE_DOSAVE) {
+            savestate_state = 0;
+            save_state(savestate_fname, "Description");
 	} else if (savestate_state == STATE_DOREWIND) {
 	    savestate_state = STATE_REWIND;
 	    reset_drawing ();
