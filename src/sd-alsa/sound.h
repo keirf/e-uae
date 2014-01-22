@@ -54,7 +54,7 @@ static void check_sound_buffers (void)
       ret = snd_pcm_writei(alsa_playback_handle, buf, frames);
       if (ret < 0) {
 	if (ret == -EAGAIN || ret == -EINTR)
-	  continue;
+	  break;
 	if (alsa_xrun_recovery(alsa_playback_handle, ret) < 0) {
 	  fprintf(stderr, "uae: write error with alsa: %s\n", snd_strerror(ret));
 	  exit(-1);

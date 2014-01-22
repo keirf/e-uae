@@ -233,6 +233,9 @@ int init_sound (void)
 
     sndbufpt = sndbuffer;
 
+    if ( snd_pcm_nonblock(alsa_playback_handle, 1) != 0 )
+        write_log("ALSA: Unable to enter non-blocking mode.\n");
+
     return 1;
 
  nosound:
