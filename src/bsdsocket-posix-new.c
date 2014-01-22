@@ -56,7 +56,7 @@
 #ifdef DEBUG_BSDSOCKET
 #define DEBUG_LOG write_log
 #else
-#define DEBUG_LOG(...) do ; while(0)
+#define DEBUG_LOG(...) do {} while(0)
 #endif
 
 #define WAITSIGNAL	waitsig (context, sb)

@@ -52,7 +52,7 @@
 #ifdef DEBUG
 #define DEBUG_LOG write_log
 #else
-#define DEBUG_LOG(...) do ; while(0)
+#define DEBUG_LOG(...) do {} while(0)
 #endif
 
 static SDL_Surface *display;
