@@ -343,7 +343,7 @@ void scp_loadrevolution(
     }
 
     if (i & 7)
-        tracktiming[i>>3] = d->latency/(unsigned int)(2*(1+(i&7)));
+        tracktiming[i>>3] = d->latency/(unsigned int)(2*(i&7));
 
     *tracklength = i;
 }
