@@ -278,6 +278,7 @@ noinst_HEADERS = \
 	include/inputdevice.h	include/joystick.h	\
 	include/keyboard.h	include/keybuf.h	\
 	include/memory.h	include/libdisk.h	\
+	include/supercard_pro.h				\
 	include/native2amiga.h	include/newcpu.h	\
 	include/noflags.h	include/options.h	\
 	include/osemu.h		include/picasso96.h	\
@@ -318,7 +319,7 @@ uae_SOURCES = \
 	native2amiga.c disk.c crc32.c savestate.c unzip.c \
 	uaeexe.c uaelib.c fdi2raw.c hotkeys.c \
 	ar.c driveclick.c enforcer.c misc.c \
-	missing.c readcpu.c libdisk.c
+	missing.c readcpu.c libdisk.c supercard_pro.c
 
 
 EXTRA_uae_SOURCES = \
@@ -416,7 +417,7 @@ am_uae_OBJECTS = main.$(OBJEXT) newcpu.$(OBJEXT) fpp.$(OBJEXT) \
 	uaeexe.$(OBJEXT) uaelib.$(OBJEXT) fdi2raw.$(OBJEXT) \
 	hotkeys.$(OBJEXT) ar.$(OBJEXT) driveclick.$(OBJEXT) \
 	enforcer.$(OBJEXT) misc.$(OBJEXT) missing.$(OBJEXT) \
-	readcpu.$(OBJEXT) libdisk.$(OBJEXT)
+	readcpu.$(OBJEXT) libdisk.$(OBJEXT) supercard_pro.$(OBJEXT)
 uae_OBJECTS = $(am_uae_OBJECTS)
 uae_LDFLAGS =
 SCRIPTS = $(dist_noinst_SCRIPTS)
@@ -463,7 +464,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/traps.Po ./$(DEPDIR)/tui.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/uaeexe.Po ./$(DEPDIR)/uaelib.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/unzip.Po ./$(DEPDIR)/writelog.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/zfile.Po ./$(DEPDIR)/libdisk.Po
+@AMDEP_TRUE@	./$(DEPDIR)/zfile.Po ./$(DEPDIR)/libdisk.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/supercard_pro.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -576,6 +578,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/disk.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libdisk.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/supercard_pro.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drawing.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/driveclick.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/enforcer.Po@am__quote@

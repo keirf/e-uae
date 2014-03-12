@@ -44,6 +44,7 @@
 #endif
 #endif
 #include "libdisk.h"
+#include "supercard_pro.h"
 #include "crc32.h"
 
 #include <ctype.h>
@@ -136,7 +137,7 @@ typedef struct {
 #define DRIVE_ID_35HD  0xAAAAAAAA
 #define DRIVE_ID_525SD 0x55555555 /* 40 track 5.25 drive , kickstart does not recognize this */
 
-typedef enum { ADF_NORMAL, ADF_EXT1, ADF_EXT2, ADF_FDI, ADF_IPF, ADF_CATWEASEL, ADF_PCDOS, ADF_LIBDISK } drive_filetype;
+typedef enum { ADF_NORMAL, ADF_EXT1, ADF_EXT2, ADF_FDI, ADF_IPF, ADF_CATWEASEL, ADF_PCDOS, ADF_LIBDISK, ADF_SUPERCARD_PRO } drive_filetype;
 typedef struct {
     struct zfile *diskfile;
     struct zfile *writediskfile;
@@ -556,6 +557,9 @@ static void drive_image_free (drive *drv)
 	break;
 	case ADF_LIBDISK:
             libdisk_close(drv - floppy);
+	break;
+	case ADF_SUPERCARD_PRO:
+            scp_close(drv - floppy);
 	break;
 	case ADF_FDI:
 #ifdef FDI2RAW
@@ -989,6 +993,12 @@ static int drive_insert (drive * drv, struct uae_prefs *p, int dnum, const char 
 	drv->wrprot = 1;
 	drv->num_tracks = 160;
 	drv->filetype = ADF_LIBDISK;
+
+    } else if (scp_open(fname, drv-floppy)) {
+
+	drv->wrprot = 1;
+	drv->num_tracks = 160;
+	drv->filetype = ADF_SUPERCARD_PRO;
 
     } else {
 	unsigned int i;
@@ -1437,6 +1447,10 @@ static void drive_fill_bigbuf (drive * drv, int force)
 
 	libdisk_loadtrack (drv->bigmfmbuf, drv->tracktiming, drv - floppy, tr, &drv->tracklen, &drv->multi_revolution, &drv->skipoffset);
 
+    } else if (drv->filetype == ADF_SUPERCARD_PRO) {
+
+	scp_loadtrack (drv->bigmfmbuf, drv->tracktiming, drv - floppy, tr, &drv->tracklen, &drv->multi_revolution, &drv->skipoffset);
+
     } else if (drv->filetype == ADF_FDI) {
 
 #ifdef FDI2RAW
@@ -1795,6 +1809,7 @@ static void drive_write_data (drive * drv)
 	return;
     case ADF_IPF:
     case ADF_LIBDISK:
+    case ADF_SUPERCARD_PRO:
 	break;
     case ADF_PCDOS:
 	ret = drive_write_pcdos (drv);
@@ -2350,6 +2365,9 @@ static void fetchnextrevolution (drive *drv)
 	break;
 	case ADF_LIBDISK:
 	libdisk_loadrevolution (drv->bigmfmbuf, drv - floppy, drv->tracktiming, &drv->tracklen);
+	break;
+	case ADF_SUPERCARD_PRO:
+	scp_loadrevolution (drv->bigmfmbuf, drv - floppy, drv->tracktiming, &drv->tracklen);
 	break;
 	case ADF_FDI:
 #ifdef FDI2RAW
