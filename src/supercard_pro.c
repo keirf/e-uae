@@ -5,11 +5,11 @@
 
 #include "sysconfig.h"
 #include "sysdeps.h"
-#include <stdint.h>
-#include <dlfcn.h>
-#include "err.h"
 #include "supercard_pro.h"
-#include <arpa/inet.h>
+
+#include <err.h>
+#include <stdint.h>
+#include <endian.h>
 
 #define MAX_REVS 5
 
@@ -67,20 +67,6 @@ static struct drive {
     (void) (&_x == &_y);                        \
     _x > _y ? _x : _y; })
 
-static void *memalloc(size_t size)
-{
-    void *p = malloc(size?:1);
-    if (p == NULL)
-        err(1, NULL);
-    memset(p, 0, size);
-    return p;
-}
-
-static void memfree(void *p)
-{
-    free(p);
-}
-
 static void read_exact(int fd, void *buf, size_t count)
 {
     ssize_t done;
@@ -124,7 +110,7 @@ int scp_open(const char *name, unsigned int drv)
     struct drive *d = &drive[drv];
     struct stat sbuf;
     struct scp_stream *scss;
-    char header[0x10];
+    uint8_t header[0x10];
     char *p;
 
     p = strrchr(name, '.');
@@ -161,9 +147,7 @@ int scp_open(const char *name, unsigned int drv)
         return 0;
     }
 
-    d->revs = header[5];
-    if (d->revs > MAX_REVS)
-        d->revs = MAX_REVS;
+    d->revs = min((int)header[5], MAX_REVS);
 
     return 1;
 }
@@ -174,7 +158,7 @@ void scp_close(unsigned int drv)
     if (!d->revs)
         return;
     close(d->fd);
-    memfree(d->dat);
+    free(d->dat);
     memset(d, 0, sizeof(*d));
 }
 
@@ -192,7 +176,7 @@ int scp_loadtrack(
     *multirev = (d->revs != 1);
     *gapoffset = -1;
 
-    memfree(d->dat);
+    free(d->dat);
     d->dat = NULL;
     d->datsz = 0;
     
@@ -221,7 +205,7 @@ int scp_loadtrack(
         d->datsz += d->index_off[rev];
     }
 
-    d->dat = memalloc(d->datsz * sizeof(d->dat[0]));
+    d->dat = malloc(d->datsz * sizeof(d->dat[0]));
     d->datsz = 0;
 
     for (rev = 0 ; rev < d->revs ; rev++) {
