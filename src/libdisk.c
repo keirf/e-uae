@@ -123,7 +123,8 @@ static void getrev(unsigned int drv, uae_u16 *mfmbuf, uae_u16 *tracktiming,
     for (i = 0; i < (((d->track_raw->bitlen+7)/8)+1)/2; i++)
         mfmbuf[i] = ntohs(mfmbuf[i]);
 
-    memcpy(tracktiming, d->track_raw->speed, 2*((d->track_raw->bitlen+7)/8));
+    for (i = 0; i < d->track_raw->bitlen; i += 8)
+        tracktiming[i>>3] = d->track_raw->speed[i];
 }
 
 int libdisk_loadtrack(
