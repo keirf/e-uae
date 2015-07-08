@@ -54,7 +54,7 @@ struct {
 
 #include <dlfcn.h>
 
-#define CAPSLIB_NAME    "libcapsimage.so.4"
+#define CAPSLIB_NAME    "libcapsimage.so.5"
 
 /*
  * The Unix/dlopen method for loading and linking the CAPSLib plug-in
@@ -532,6 +532,10 @@ int caps_loadtrack (uae_u16 *mfmbuf, uae_u16 *tracktiming, unsigned int drv, uns
     if (ci.timelen > 0) {
 	for (i = 0; i < ci.timelen; i++)
 	    tracktiming[i] = (uae_u16)ci.timebuf[i];
+        /* Fill the entire tracktiming buffer, for multi-revolution reads where
+         * a subsequent revolution is longer. */
+        for (; i < 0x4000; i++)
+            tracktiming[i] = tracktiming[0];
     }
     return 1;
 }
